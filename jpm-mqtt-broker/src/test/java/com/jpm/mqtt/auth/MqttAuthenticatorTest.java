@@ -2,7 +2,7 @@ package com.jpm.mqtt.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.jpm.common.util.HttpUtils;
+import com.jpm.common.util.IHttpUtils;   // ✅ Mock 接口，不 Mock 具体类
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -15,13 +15,13 @@ import static org.mockito.Mockito.when;
 
 class MqttAuthenticatorTest {
 
-    private HttpUtils          httpUtils;
+    private IHttpUtils         httpUtils;    // ✅ 接口类型，Mockito 可以 Mock
     private MqttAuthenticator  authenticator;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
-        httpUtils     = Mockito.mock(HttpUtils.class);
+        httpUtils     = Mockito.mock(IHttpUtils.class);   // ✅ Mock 接口
         authenticator = new MqttAuthenticator(httpUtils);
     }
 
@@ -33,8 +33,8 @@ class MqttAuthenticatorTest {
         json.put("username",  "admin");
         when(httpUtils.get(anyString(), any(Map.class))).thenReturn(json);
 
-        boolean result = authenticator.checkValid("client-1",
-                "sso-cookie-xxx", "account-token-xxx".getBytes());
+        boolean result = authenticator.checkValid(
+                "client-1", "sso-cookie-xxx", "account-token-xxx".getBytes());
 
         assertTrue(result);
         assertEquals("domain-abc", authenticator.getDomainId("client-1"));
@@ -43,12 +43,12 @@ class MqttAuthenticatorTest {
     @Test
     void checkValid_invalidCredentials() {
         ObjectNode json = mapper.createObjectNode();
-        json.put("valid", false);
+        json.put("valid",     false);
         json.put("error_msg", "Invalid session");
         when(httpUtils.get(anyString(), any(Map.class))).thenReturn(json);
 
-        boolean result = authenticator.checkValid("client-2",
-                "bad-cookie", "bad-token".getBytes());
+        boolean result = authenticator.checkValid(
+                "client-2", "bad-cookie", "bad-token".getBytes());
 
         assertFalse(result);
         assertNull(authenticator.getDomainId("client-2"));
@@ -58,10 +58,11 @@ class MqttAuthenticatorTest {
     void checkValid_networkError() {
         when(httpUtils.get(anyString(), any(Map.class))).thenReturn(null);
 
-        boolean result = authenticator.checkValid("client-3",
-                "cookie", "token".getBytes());
+        boolean result = authenticator.checkValid(
+                "client-3", "cookie", "token".getBytes());
 
         assertFalse(result);
+        assertNull(authenticator.getDomainId("client-3"));
     }
 
     @Test

@@ -12,10 +12,10 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 调用 C++ 平台 HTTP 接口的工具类
- * 各子模块共用，避免重复实现
+ * HTTP 工具类，实现 IHttpUtils 接口
+ * 测试时通过 Mock IHttpUtils 接口，不直接 Mock 此类
  */
-public class HttpUtils {
+public class HttpUtils implements IHttpUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpUtils.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -27,9 +27,7 @@ public class HttpUtils {
         this.httpClient = httpClient;
     }
 
-    /**
-     * GET 请求，带 URL 参数
-     */
+    @Override
     public JsonNode get(String url, Map<String, String> params) {
         try {
             var request = httpClient.newRequest(url);
@@ -52,9 +50,7 @@ public class HttpUtils {
         }
     }
 
-    /**
-     * POST 请求，JSON body
-     */
+    @Override
     public JsonNode post(String url, Object body) {
         try {
             String jsonBody = MAPPER.writeValueAsString(body);

@@ -16,40 +16,50 @@
     <name>JPM MQTT Broker</name>
 
     <dependencies>
-        <!-- 公共模块 -->
         <dependency>
             <groupId>com.jpm</groupId>
             <artifactId>jpm-common</artifactId>
         </dependency>
 
-        <!-- Moquette 嵌入式 MQTT Broker（Maven Central） -->
         <dependency>
             <groupId>io.moquette</groupId>
             <artifactId>moquette-broker</artifactId>
+            <version>0.17</version>
             <exclusions>
+                <!-- ✅ 排除 log4j 1.x -->
                 <exclusion>
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
                 </exclusion>
+                <!-- ✅ 排除 slf4j-log4j12 旧桥接 -->
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
+                <!-- ✅ 关键：排除 slf4j-reload4j，它和 log4j-over-slf4j 会形成循环 -->
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-reload4j</artifactId>
+                </exclusion>
+                <!-- ✅ 排除 reload4j 本体 -->
+                <exclusion>
+                    <groupId>ch.qos.reload4j</groupId>
+                    <artifactId>reload4j</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
+        <!-- log4j → slf4j 桥接，让 Moquette 的 log4j 调用转到 logback -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
 
-        <!-- Jetty HTTP 客户端（调用 C++ 平台鉴权接口） -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-client</artifactId>
         </dependency>
-
-        <!-- Jetty HTTP 服务端（暴露 /internal/mqtt/publish 接口） -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
@@ -58,14 +68,10 @@
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
         </dependency>
-
-        <!-- Jackson -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
-
-        <!-- 日志 -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -74,8 +80,6 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
-
-        <!-- 测试 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
